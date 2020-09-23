@@ -17,6 +17,7 @@ Gem::Specification.new do |spec|
 
   spec.files                    = `git ls-files -z`.split("\x0")  
   spec.require_paths            = ["lib"]
+  spec.files.reject! { |fn| fn.include? "gem" }
 
   spec.add_development_dependency "jekyll", ">= 3.6.3"
   spec.add_development_dependency "bundler", "~> 1.6"  
