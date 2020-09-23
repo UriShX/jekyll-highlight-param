@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+require "rouge"
 
 module Jekyll
   module Tags
-    class HighlightBlock < Liquid::Block
+    class HighlightBlockParam < Liquid::Block
       include Liquid::StandardFilters
 
       # The regular expression syntax checker. Start with the language specifier.
@@ -15,7 +16,7 @@ module Jekyll
       def initialize(tag_name, markup, tokens)
         super
         if markup.strip =~ SYNTAX
-          @lang = Regexp.last_match(1).downcase
+          @lang = Regexp.last_match(1)
           @highlight_options = parse_options(Regexp.last_match(2))
         else
           raise SyntaxError, <<~MSG
@@ -35,6 +36,18 @@ module Jekyll
         suffix = context["highlighter_suffix"] || ""
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
+        
+        # if ::Rouge::Lexer.find(@lang.downcase) != nil
+        #   @lang = @lang.downcase
+        # else
+        begin
+          ::Rouge::Lexer.find((context[@lang]).downcase) != nil
+          @lang = (context[@lang]).downcase
+        rescue
+          @lang = @lang.downcase
+        end
+        # end
+        
         output =
           case context.registers[:site].highlighter
           when "rouge"
@@ -79,7 +92,6 @@ module Jekyll
       end
 
       def render_rouge(code)
-        require "rouge"
         formatter = ::Rouge::Formatters::HTMLLegacy.new(
           :line_numbers => @highlight_options[:linenos],
           :wrap         => false,
@@ -107,4 +119,4 @@ module Jekyll
   end
 end
 
-Liquid::Template.register_tag("highlight", Jekyll::Tags::HighlightBlock)
+Liquid::Template.register_tag("highlight_param", Jekyll::Tags::HighlightBlockParam)
