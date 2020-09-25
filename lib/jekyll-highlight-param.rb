@@ -2,7 +2,7 @@
 
 module Jekyll
   module Tags
-    class HighlightBlock < Liquid::Block
+    class HighlightBlockParam < Liquid::Block
       include Liquid::StandardFilters
 
       # The regular expression syntax checker. Start with the language specifier.
@@ -10,20 +10,33 @@ module Jekyll
       # forms: name, name=value, or name="<quoted list>"
       #
       # <quoted list> is a space-separated list of numbers
-      SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
+      # SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
+      VARIABLE_SYNTAX = %r!
+        ^(\{\{\s*(?<lang_var>[a-zA-Z0-9.+#_-]+)\s*\}\}|
+        (?<lang>[a-zA-Z0-9.+#_-]+))
+        \s*(?<fault1>[}]+\s*|)
+        (\{\{(?<params_var>((\s*\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*))\s*\}\}|
+        (?<params>((\s*\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)))
+        (?<fault2>.*)
+      !mx.freeze
 
       def initialize(tag_name, markup, tokens)
         super
-        if markup.strip =~ SYNTAX
-          @lang = Regexp.last_match(1).downcase
-          @highlight_options = parse_options(Regexp.last_match(2))
-        else
+        markup  = markup.strip
+        @matched = markup.match(VARIABLE_SYNTAX)
+        if !@matched or @matched["fault1"] or @matched["fault2"]
+          # @lang = @matched["lang_var"] || @matched["lang"]
+          # @highlight_options = @matched["params_var"] || @matched["params"]
+        # else
           raise SyntaxError, <<~MSG
-            Syntax Error in tag 'highlight' while parsing the following markup:
+            Syntax Error in tag '#{tag_name}' while parsing the following markup:
 
             #{markup}
 
-            Valid syntax: highlight <lang> [linenos]
+            Valid syntax: #{tag_name} <lang> [linenos]
+                      OR: #{tag_name} {{ lang_variable }} [linenos]
+                      OR: #{tag_name} <lang> {{ [linenos_variable(s)] }}
+                      OR: #{tag_name} {{ lang_variable }} {{ [linenos_variable(s)] }}
           MSG
         end
       end
@@ -34,6 +47,17 @@ module Jekyll
         prefix = context["highlighter_prefix"] || ""
         suffix = context["highlighter_suffix"] || ""
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
+
+        if @matched["lang_var"]
+          @lang = (context[@matched["lang_var"]]).downcase
+        elsif @matched["lang"]
+          @lang = @matched["lang"].downcase
+        else
+          raise SyntaxError, <<~MSG
+            Unknown Syntax Error in tag 'highlight_param'.
+            Please review tag documentation.
+            MSG
+        end
 
         output =
           case context.registers[:site].highlighter
@@ -107,4 +131,4 @@ module Jekyll
   end
 end
 
-Liquid::Template.register_tag("highlight", Jekyll::Tags::HighlightBlock)
+Liquid::Template.register_tag("highlight_param", Jekyll::Tags::HighlightBlockParam)
