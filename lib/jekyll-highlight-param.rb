@@ -12,6 +12,14 @@ module Jekyll
       #
       # <quoted list> is a space-separated list of numbers
       SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
+      VARIABLE_SYNTAX = %r!
+        ^(\{\{\s*(?<lang_var>[a-zA-Z0-9.+#_-]+)\s*\}\}|
+        (?<lang>[a-zA-Z0-9.+#_-]+))
+        \s*(?<fault1>[}]+)\s*
+        (\{\{(?<params_var>((\s*\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*))\s*\}\}|
+        (?<params>((\s*\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)))
+        (?<fault2>.*)
+      !mx.freeze
 
       def initialize(tag_name, markup, tokens)
         super
