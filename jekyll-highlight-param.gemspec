@@ -5,13 +5,13 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name                     = "jekyll-highlight-param"
-  spec.version                  = "0.0.1"
+  spec.version                  = "0.0.2"
   spec.date                     = "2020-09-23"
   spec.authors                  = ["Uri Shani"]
   spec.email                    = ["usdogi@gmail.com"]  
   spec.summary                  = "Jekyll syntax highlighter that accepts parameter for the language"
   spec.description              = "A Liquid tag plugin for Jekyll that replaces the built in highlight tag, and allows passing the language to highlight in as a parameter."
-  spec.homepage                 = "https://github.com/UriShX/jekyll-highlight-param"
+  spec.homepage                 = "https://github.com/urishx/jekyll-highlight-param"
   spec.license                  = "MIT"
   spec.required_ruby_version    = ">= 2.0.0"
 
