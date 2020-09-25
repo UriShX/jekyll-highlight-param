@@ -59,6 +59,12 @@ module Jekyll
             MSG
         end
 
+        if @matched["params_var"]
+          @highlight_options = parse_options(context[@matched["params_var"]])
+        elsif @matched["params"]
+          @highlight_options = parse_options(@matched["params"])
+        end
+
         output =
           case context.registers[:site].highlighter
           when "rouge"
