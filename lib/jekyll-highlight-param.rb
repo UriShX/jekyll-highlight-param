@@ -1,9 +1,8 @@
 # frozen_string_literal: true
-require "rouge"
 
 module Jekyll
   module Tags
-    class HighlightBlockParam < Liquid::Block
+    class HighlightBlock < Liquid::Block
       include Liquid::StandardFilters
 
       # The regular expression syntax checker. Start with the language specifier.
@@ -12,19 +11,11 @@ module Jekyll
       #
       # <quoted list> is a space-separated list of numbers
       SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
-      VARIABLE_SYNTAX = %r!
-        ^(\{\{\s*(?<lang_var>[a-zA-Z0-9.+#_-]+)\s*\}\}|
-        (?<lang>[a-zA-Z0-9.+#_-]+))
-        \s*(?<fault1>[}]+)\s*
-        (\{\{(?<params_var>((\s*\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*))\s*\}\}|
-        (?<params>((\s*\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)))
-        (?<fault2>.*)
-      !mx.freeze
 
       def initialize(tag_name, markup, tokens)
         super
         if markup.strip =~ SYNTAX
-          @lang = Regexp.last_match(1)
+          @lang = Regexp.last_match(1).downcase
           @highlight_options = parse_options(Regexp.last_match(2))
         else
           raise SyntaxError, <<~MSG
@@ -44,18 +35,6 @@ module Jekyll
         suffix = context["highlighter_suffix"] || ""
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
-        
-        # if ::Rouge::Lexer.find(@lang.downcase) != nil
-        #   @lang = @lang.downcase
-        # else
-        begin
-          ::Rouge::Lexer.find((context[@lang]).downcase) != nil
-          @lang = (context[@lang]).downcase
-        rescue
-          @lang = @lang.downcase
-        end
-        # end
-        
         output =
           case context.registers[:site].highlighter
           when "rouge"
@@ -100,6 +79,7 @@ module Jekyll
       end
 
       def render_rouge(code)
+        require "rouge"
         formatter = ::Rouge::Formatters::HTMLLegacy.new(
           :line_numbers => @highlight_options[:linenos],
           :wrap         => false,
@@ -127,4 +107,4 @@ module Jekyll
   end
 end
 
-Liquid::Template.register_tag("highlight_param", Jekyll::Tags::HighlightBlockParam)
+Liquid::Template.register_tag("highlight", Jekyll::Tags::HighlightBlock)
