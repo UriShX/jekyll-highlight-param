@@ -1,5 +1,7 @@
 # jekyll-highlight-param
 
+[![Gem Version](https://badge.fury.io/rb/jekyll-highlight-param.svg)](https://badge.fury.io/rb/jekyll-highlight-param)
+
 A Liquid tag plugin for Jekyll that replaces the built in `{% highlight %}` tag, and allows passing the language to highlight in as a parameter.
 
 _An issue for making this change a part of the mainline Jekyll Highlight tag can be found [here](https://github.com/jekyll/jekyll/issues/8290)._ 
@@ -63,13 +65,15 @@ You could then reference that variable in your highlight:
   {% capture my_code %}
     {% include {{ page.code }} %}
   {% endcapture %}
-  {% highlight_param page.my_lang %}
+  {% highlight_param {{ page.my_lang }} %}
     {{ my_code | strip }}
   {% endhighlight_param %}
 {% endif %}
 ```
 
 In this example, the capture will store the include file `_includes/footer_company_a.html`, then the highlight will would match the display to match the syntax of `liquid`.
+
+_Please note: Since v0.0.2 passing parameteric variables to the `highlight_param` tag is done in a similar way to the syntax for passing parameters to other tags, such as `include`. This is a breaking change from v0.0.1._
 
 ## Contributing
 
