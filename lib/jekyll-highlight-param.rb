@@ -24,19 +24,19 @@ module Jekyll
         super
         markup  = markup.strip
         @matched = markup.match(VARIABLE_SYNTAX)
-        if !@matched or @matched["fault1"] or @matched["fault2"]
+        if !@matched or @matched["fault1"].strip.empty? or @matched["fault2"].strip.empty?
           # @lang = @matched["lang_var"] || @matched["lang"]
           # @highlight_options = @matched["params_var"] || @matched["params"]
         # else
           raise SyntaxError, <<~MSG
-            Syntax Error in tag '#{tag_name}' while parsing the following markup:
+            Syntax Error in tag '#{tag_name}' while parsing the following markup:\n\n
 
-            #{markup}
+            #{markup}\n\n
 
-            Valid syntax: #{tag_name} <lang> [linenos]
-                      OR: #{tag_name} {{ lang_variable }} [linenos]
-                      OR: #{tag_name} <lang> {{ [linenos_variable(s)] }}
-                      OR: #{tag_name} {{ lang_variable }} {{ [linenos_variable(s)] }}
+            Valid syntax: #{tag_name} <lang> [linenos]\n
+                      \tOR: #{tag_name} {{ lang_variable }} [linenos]\n
+                      \tOR: #{tag_name} <lang> {{ [linenos_variable(s)] }}\n
+                      \tOR: #{tag_name} {{ lang_variable }} {{ [linenos_variable(s)] }}\n
           MSG
         end
       end
