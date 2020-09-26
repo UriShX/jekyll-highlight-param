@@ -27,6 +27,7 @@ module Jekyll
         super
         markup  = markup.strip
         @matched = markup.match(VARIABLE_SYNTAX)
+        print @matched
         if !@matched or !@matched["fault1"].strip.empty? or !@matched["fault2"].strip.empty?
           # @lang = @matched["lang_var"] || @matched["lang"]
           # @highlight_options = @matched["params_var"] || @matched["params"]
