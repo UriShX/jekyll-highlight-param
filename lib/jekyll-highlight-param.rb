@@ -62,7 +62,7 @@ module Jekyll
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
         if @matched["lang_var"]
-          local_lang = context[@matched["lang_var"]]
+          local_lang = context[@matched["lang_var"].strip]
           local_lang = local_lang.match(LANG_SYNTAX)
           if local_lang
             @lang = (local_lang).downcase
@@ -82,7 +82,7 @@ module Jekyll
         end
 
         if @matched["params_var"]
-          local_opts = context[@matched["params_var"]]
+          local_opts = context[@matched["params_var"].strip]
           local_opts = local_opts.match(OPTIONS_SYNTAX)
           if local_opts
             @highlight_options = parse_options(local_opts)
