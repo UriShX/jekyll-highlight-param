@@ -63,8 +63,8 @@ module Jekyll
 
         if @matched["lang_var"]
           local_lang = context[@matched["lang_var"].strip]
-          local_lang = local_lang.match(LANG_SYNTAX)
-          if local_lang
+          # local_lang = local_lang.match()
+          if LANG_SYNTAX.match?(local_lang)
             @lang = (local_lang).downcase
           else
             raise SyntaxError, <<~MSG
@@ -83,8 +83,8 @@ module Jekyll
 
         if @matched["params_var"]
           local_opts = context[@matched["params_var"].strip]
-          local_opts = local_opts.match(OPTIONS_SYNTAX)
-          if local_opts
+          # local_opts = local_opts.match(OPTIONS_SYNTAX)
+          if OPTIONS_SYNTAX.match?(local_opts)
             @highlight_options = parse_options(local_opts)
           else
             raise SyntaxError, <<~MSG
