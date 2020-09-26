@@ -13,13 +13,13 @@ module Jekyll
       # SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
       PARAM_SYNTAX = %r!\w+[.]\w+!x.freeze
       LANG_SYNTAX = %r!([a-zA-Z0-9.+#_-]+)!x.freeze
-      OPTIONS_SYNTAX = %r!\s*(\w+(=(\w+|"([0-9]+\s)*[0-9]+")))?!x.freeze
+      OPTIONS_SYNTAX = %r!(\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+")?)*)+?!x.freeze
       VARIABLE_SYNTAX = %r!
         ^(\{\{\s*(?<lang_var>(#{PARAM_SYNTAX}))\s*\}\}|
         (?<lang>#{LANG_SYNTAX}))
         \s*(?<fault1>[}]+\s*|)
-        (\{\{(?<params_var>((#{PARAM_SYNTAX})*))\s*\}\}|
-        (?<params>((#{OPTIONS_SYNTAX})*)))
+        (\{\{(?<params_var>(#{PARAM_SYNTAX}))\s*\}\}|
+        (?<params>(#{OPTIONS_SYNTAX})))
         (?<fault2>.*)
       !mx.freeze
 
