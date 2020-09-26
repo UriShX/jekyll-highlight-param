@@ -82,10 +82,10 @@ module Jekyll
         end
 
         if @matched["params_var"]
-          local_opts = context[@matched["params_var"].strip]
+          # local_opts = context[@matched["params_var"].strip]
           # local_opts = local_opts.match(OPTIONS_SYNTAX)
-          if OPTIONS_SYNTAX.match?(local_opts)
-            @highlight_options = parse_options(local_opts)
+          if OPTIONS_SYNTAX.match?(context[@matched["params_var"]])
+            @highlight_options = parse_options(context[@matched["params_var"]])
           else
             raise SyntaxError, <<~MSG
             Can't find language variable #{@matched["params_var"]}
