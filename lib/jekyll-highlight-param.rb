@@ -71,6 +71,7 @@ module Jekyll
             Can't find language variable #{@matched["lang_var"]}
             Parsing: #{local_lang}
             MSG
+          end
         elsif @matched["lang"]
           @lang = @matched["lang"].downcase
         else
@@ -82,10 +83,15 @@ module Jekyll
 
         if @matched["params_var"]
           local_opts = context[@matched["params_var"]]
-          print local_opts
           local_opts = local_opts.match(OPTIONS_SYNTAX)
-          print local_opts
-          @highlight_options = parse_options(local_opts) if local_opts
+          if local_opts
+            @highlight_options = parse_options(local_opts)
+          else
+            raise SyntaxError, <<~MSG
+            Can't find language variable #{@matched["params_var"]}
+            Parsing: #{local_opts}
+            MSG
+          end
         elsif @matched["params"]
           @highlight_options = parse_options(@matched["params"])
         end
