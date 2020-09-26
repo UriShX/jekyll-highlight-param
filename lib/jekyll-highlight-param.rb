@@ -35,6 +35,7 @@ module Jekyll
       def initialize(tag_name, markup, tokens)
         super
         markup  = markup.strip
+        print markup
         @matched = markup.match(VARIABLE_SYNTAX)
         print @matched
         if !@matched or !@matched["fault1"].strip.empty? or !@matched["fault2"].strip.empty?
@@ -62,7 +63,7 @@ module Jekyll
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
         if @matched["lang_var"]
-          _lang = @mtached["lang_var"]
+          _lang = @matched["lang_var"]
           @lang = (context[_lang]).downcase
         elsif @matched["lang"]
           @lang = @matched["lang"].downcase
