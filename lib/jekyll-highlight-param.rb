@@ -12,8 +12,8 @@ module Jekyll
       # <quoted list> is a space-separated list of numbers
       # SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
       PARAM_SYNTAX = %r!\w+[.]\w+!x.freeze
-      LANG_SYNTAX = %r![a-zA-Z0-9.+#_-]+!x.freeze
-      OPTIONS_SYNTAX = %r!\s*\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?!x.freeze
+      LANG_SYNTAX = %r!([a-zA-Z0-9.+#_-]+)!x.freeze
+      OPTIONS_SYNTAX = %r!\s*(\w+(=(\w+|"([0-9]+\s)*[0-9]+")))?!x.freeze
       VARIABLE_SYNTAX = %r!
         ^(\{\{\s*(?<lang_var>#{PARAM_SYNTAX})\s*\}\}|
         (?<lang>#{LANG_SYNTAX}))
@@ -52,7 +52,10 @@ module Jekyll
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
         if @matched["lang_var"]
-          local_lang = context[@matched["lang_var"]].match(LANG_SYNTAX)
+          local_lang = context[@matched["lang_var"]]
+          print local_lang
+          local_lang = local_lang.match(LANG_SYNTAX)
+          print local_lang
           @lang = (local_lang).downcase if local_lang
         elsif @matched["lang"]
           @lang = @matched["lang"].downcase
@@ -64,7 +67,10 @@ module Jekyll
         end
 
         if @matched["params_var"]
-          local_opts = context[@matched["params_var"]].match(OPTIONS_SYNTAX)
+          local_opts = context[@matched["params_var"]]
+          print local_opts
+          local_opts = local_opts.match(OPTIONS_SYNTAX)
+          print local_opts
           @highlight_options = parse_options(local_opts) if local_opts
         elsif @matched["params"]
           @highlight_options = parse_options(@matched["params"])
