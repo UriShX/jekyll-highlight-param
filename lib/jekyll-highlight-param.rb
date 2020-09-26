@@ -62,16 +62,7 @@ module Jekyll
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
         if @matched["lang_var"]
-          local_lang = context[@matched["lang_var"].strip]
-          # local_lang = local_lang.match()
-          if LANG_SYNTAX.match?(context[@matched["lang_var"]])
-            @lang = (context[@matched["lang_var"]]).downcase
-          else
-            raise SyntaxError, <<~MSG
-            Can't find language variable #{@matched["lang_var"]}
-            Parsing: #{local_lang}
-            MSG
-          end
+          @lang = (context[@matched["lang_var"]]).downcase
         elsif @matched["lang"]
           @lang = @matched["lang"].downcase
         else
@@ -82,16 +73,7 @@ module Jekyll
         end
 
         if @matched["params_var"]
-          local_opts = context[@matched["params_var"].strip]
-          # local_opts = local_opts.match(OPTIONS_SYNTAX)
-          if OPTIONS_SYNTAX.match?(context[@matched["params_var"]])
-            @highlight_options = parse_options(context[@matched["params_var"]])
-          else
-            raise SyntaxError, <<~MSG
-            Can't find language variable #{@matched["params_var"]}
-            Parsing: #{local_opts}
-            MSG
-          end
+          @highlight_options = parse_options(context[@matched["params_var"]])
         elsif @matched["params"]
           @highlight_options = parse_options(@matched["params"])
         end
@@ -148,7 +130,14 @@ module Jekyll
           :gutter_class => "gutter",
           :code_class   => "code"
         )
-        lexer = ::Rouge::Lexer.find_fancy(@lang, code) || Rouge::Lexers::PlainText
+        if LANG_SYNTAX.match?(@lang)
+          lexer = ::Rouge::Lexer.find_fancy(@lang, code) || Rouge::Lexers::PlainText
+        else
+          raise SyntaxError, <<~MSG
+          Can't find language variable #{@matched["lang_var"]}
+          Parsing: #{local_lang}
+          MSG
+        end
         formatter.format(lexer.lex(code))
       end
 
