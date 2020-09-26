@@ -62,7 +62,8 @@ module Jekyll
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
         if @matched["lang_var"]
-          @lang = (context[@matched["lang_var"]]).downcase
+          _lang = @mtached["lang_var"]
+          @lang = (context[_lang]).downcase
         elsif @matched["lang"]
           @lang = @matched["lang"].downcase
         else
@@ -135,7 +136,6 @@ module Jekyll
         else
           raise SyntaxError, <<~MSG
           Can't find language variable #{@matched["lang_var"]}
-          Parsing: #{local_lang}
           MSG
         end
         formatter.format(lexer.lex(code))
