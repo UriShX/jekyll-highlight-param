@@ -48,6 +48,8 @@ end
 
 ### Using variables names for the language
 
+_Please note: Since v0.0.2 passing variables to the `highlight_param` tag is done in a similar way to the syntax for passing variables to other tags, such as `link`. This is a breaking change from v0.0.1._
+
 The name of the language you for the code to be highlighted can be specified as a variable instead of specifying the language directly in the template. For example, suppose you defined a variable in your page's front matter like this:
 
 ```yaml
@@ -72,8 +74,6 @@ You could then reference that variable in your highlight:
 ```
 
 In this example, the capture will store the include file `_includes/footer_company_a.html`, then the highlight will would match the display to match the syntax of `liquid`.
-
-_Please note: Since v0.0.2 passing parameteric variables to the `highlight_param` tag is done in a similar way to the syntax for passing parameters to other tags, such as `include`. This is a breaking change from v0.0.1._
 
 ## Contributing
 
