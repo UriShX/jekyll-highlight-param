@@ -15,11 +15,20 @@ module Jekyll
       LANG_SYNTAX = %r!([a-zA-Z0-9.+#_-]+)!x.freeze
       OPTIONS_SYNTAX = %r!(\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+")?)*)!.freeze
       VARIABLE_SYNTAX = %r!
-        ^(\{\{\s*(?<lang_var>#{PARAM_SYNTAX})\s*\}\}|
-        (?<lang>#{LANG_SYNTAX}))
-        \s*(?<fault1>[}]+\s*|)
-        (\{\{\s*(?<params_var>(#{PARAM_SYNTAX}))\s*\}\}|
-        (?<params>(#{OPTIONS_SYNTAX}+)))
+        ^(
+          \{\{\s*
+          (?<lang_var>#{PARAM_SYNTAX})
+          \s*\}\}|
+          (?<lang>#{LANG_SYNTAX})
+        )
+        \s*
+        (?<fault1>[}]+\s*|)
+        (
+          \{\{\s*
+          (?<params_var>(#{PARAM_SYNTAX}))
+          \s*\}\}|
+          (?<params>(#{OPTIONS_SYNTAX}+))
+        )
         (?<fault2>.*)
       !mx.freeze
 
@@ -54,10 +63,14 @@ module Jekyll
 
         if @matched["lang_var"]
           local_lang = context[@matched["lang_var"]]
-          print local_lang
           local_lang = local_lang.match(LANG_SYNTAX)
-          print local_lang
-          @lang = (local_lang).downcase if local_lang
+          if local_lang
+            @lang = (local_lang).downcase
+          else
+            raise SyntaxError, <<~MSG
+            Can't find language variable #{@matched["lang_var"]}
+            Parsing: #{local_lang}
+            MSG
         elsif @matched["lang"]
           @lang = @matched["lang"].downcase
         else
