@@ -6,6 +6,8 @@ A Liquid tag plugin for Jekyll that replaces the built in `{% highlight %}` tag,
 
 _An issue for making this change a part of the mainline Jekyll Highlight tag can be found [here](https://github.com/jekyll/jekyll/issues/8290)._ 
 
+_**It appears v0.0.1 did not actually work as intended, and was simply failing gracefully by detecting the language from the code itself. A better job of detecting errors and alerting the user was devised in v0.0.2.**_
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -74,6 +76,34 @@ You could then reference that variable in your highlight:
 ```
 
 In this example, the capture will store the include file `_includes/footer_company_a.html`, then the highlight will would match the display to match the syntax of `liquid`.
+
+### Line numbers
+
+You could also pass a line numbers argument, as in the original `{% highlight %}` tag, both as parameter and as a variable. Line numbers are enabled when passing the `linenos` argument, and disabled as default.
+
+```liquid
+{% highlight_param ruby linenos %}
+def foo
+  puts 'foo'
+end
+{% endhighlight_param %}
+```
+or:
+
+```yaml
+---
+title: My page
+line_numbers: linenos
+---
+```
+
+```liquid
+{% highlight_param ruby {{ page.line_numbers }} %}
+def foo
+  puts 'foo'
+end
+{% endhighlight_param %}
+```
 
 ## Contributing
 

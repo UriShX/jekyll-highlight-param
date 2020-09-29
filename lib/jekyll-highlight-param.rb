@@ -10,8 +10,10 @@ module Jekyll
       # forms: name, name=value, or name="<quoted list>"
       #
       # <quoted list> is a space-separated list of numbers
-      # SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
-      PARAM_SYNTAX = %r!(\w+[.]\w+)!x.freeze
+      # 
+      # Both the language specifier and the options can be passed as liquid variables,
+      # please consult the documentation at https://github.com/UriShX/jekyll-highlight-param/blob/master/README.md#usage.
+      PARAM_SYNTAX = %r!(\w+([.]\w+)*)!x.freeze
       LANG_SYNTAX = %r!([a-zA-Z0-9.+#_-]+)!x.freeze
       OPTIONS_SYNTAX = %r!(\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+")?)*)!.freeze
       VARIABLE_SYNTAX = %r!
@@ -22,35 +24,41 @@ module Jekyll
           (?<lang>#{LANG_SYNTAX})
         )
         \s*
-        (?<fault1>[}]+\s*|)
+        ((?<fault1>[}]+\s*|)
         (
           \{\{\s*
           (?<params_var>(#{PARAM_SYNTAX}))
           \s*\}\}|
           (?<params>(#{OPTIONS_SYNTAX}+))
         )
-        (?<fault2>.*)
+        (?<fault2>.*))?
       !mx.freeze
+
+      def isNilOrEmpty(var)
+        if var.nil?
+          return true
+        elsif var.strip.empty?
+          return true
+        else
+          return false
+        end
+      end
 
       def initialize(tag_name, markup, tokens)
         super
         markup  = markup.strip
-        print markup
         @matched = markup.match(VARIABLE_SYNTAX)
-        print @matched
-        if !@matched or !@matched["fault1"].strip.empty? or !@matched["fault2"].strip.empty?
-          # @lang = @matched["lang_var"] || @matched["lang"]
-          # @highlight_options = @matched["params_var"] || @matched["params"]
-        # else
+        # print @matched.captures.to_s + "\n"
+        if !@matched or !isNilOrEmpty(@matched["fault1"]) or !isNilOrEmpty(@matched["fault2"])
           raise SyntaxError, <<~MSG
-            Syntax Error in tag '#{tag_name}' while parsing the following markup:\n\n
+            Syntax Error in tag '#{tag_name}' while parsing the following markup:
 
-            #{markup}\n\n
+            #{markup}
 
-            Valid syntax: #{tag_name} <lang> [linenos]\n
-                      \tOR: #{tag_name} {{ lang_variable }} [linenos]\n
-                      \tOR: #{tag_name} <lang> {{ [linenos_variable(s)] }}\n
-                      \tOR: #{tag_name} {{ lang_variable }} {{ [linenos_variable(s)] }}\n
+            Valid syntax: #{tag_name} <lang> [linenos]
+                      \tOR: #{tag_name} {{ lang_variable }} [linenos]
+                      \tOR: #{tag_name} <lang> {{ [linenos_variable(s)] }}
+                      \tOR: #{tag_name} {{ lang_variable }} {{ [linenos_variable(s)] }}
           MSG
         end
       end
@@ -63,8 +71,14 @@ module Jekyll
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
         if @matched["lang_var"]
-          _lang = @matched["lang_var"]
-          @lang = (context[_lang]).downcase
+          @lang = context[@matched["lang_var"]].downcase
+          @lang.match(LANG_SYNTAX)
+          unless $& == @lang
+            raise ArgumentError, <<~MSG
+              Language characters can only include Alphanumeric and the following characters, without spaces: . + # _ -
+              Your passed language variable: #{@lang}
+              MSG
+          end
         elsif @matched["lang"]
           @lang = @matched["lang"].downcase
         else
@@ -74,11 +88,17 @@ module Jekyll
             MSG
         end
 
+        # puts @lang
+
         if @matched["params_var"]
-          @highlight_options = parse_options(context[@matched["params_var"]])
+          @highlight_options = parse_options(@matched["params_var"])
         elsif @matched["params"]
           @highlight_options = parse_options(@matched["params"])
+        else
+          @highlight_options = parse_options("")
         end
+
+        # puts @highlight_options
 
         output =
           case context.registers[:site].highlighter
@@ -100,7 +120,7 @@ module Jekyll
 
       def parse_options(input)
         options = {}
-        return options if input.empty?
+        return options if isNilOrEmpty(input)
 
         # Split along 3 possible forms -- key="<quoted list>", key=value, or key
         input.scan(OPTIONS_REGEX) do |opt|
