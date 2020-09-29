@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.date                     = "2020-09-23"
   spec.authors                  = ["Uri Shani"]
   spec.email                    = ["usdogi@gmail.com"]  
-  spec.summary                  = "Jekyll syntax highlighter that accepts parameter for the language"
-  spec.description              = "A Liquid tag plugin for Jekyll that replaces the built in highlight tag, and allows passing the language to highlight in as a parameter."
+  spec.summary                  = "Jekyll syntax highlighter that accepts variable for the language"
+  spec.description              = "A Liquid tag plugin for Jekyll that replaces the built in highlight tag, and allows passing the language to highlight in as a liquid variable."
   spec.homepage                 = "https://github.com/urishx/jekyll-highlight-param"
   spec.license                  = "MIT"
   spec.required_ruby_version    = ">= 2.0.0"
