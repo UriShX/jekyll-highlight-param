@@ -1,5 +1,7 @@
 # jekyll-highlight-param
 
+[![Gem Version](https://badge.fury.io/rb/jekyll-highlight-param.svg)](https://badge.fury.io/rb/jekyll-highlight-param)
+
 A Liquid tag plugin for Jekyll that replaces the built in `{% highlight %}` tag, and allows passing the language to highlight in as a parameter.
 
 _An issue for making this change a part of the mainline Jekyll Highlight tag can be found [here](https://github.com/jekyll/jekyll/issues/8290)._ 
