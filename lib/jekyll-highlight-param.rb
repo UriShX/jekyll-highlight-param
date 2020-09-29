@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require "rouge"
 
 module Jekyll
   module Tags
@@ -11,20 +10,55 @@ module Jekyll
       # forms: name, name=value, or name="<quoted list>"
       #
       # <quoted list> is a space-separated list of numbers
-      SYNTAX = %r!^([a-zA-Z0-9.+#_-]+)((\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+"))?)*)$!.freeze
+      # 
+      # Both the language specifier and the options can be passed as liquid variables,
+      # please consult the documentation at https://github.com/UriShX/jekyll-highlight-param/blob/master/README.md#usage.
+      PARAM_SYNTAX = %r!(\w+([.]\w+)*)!x.freeze
+      LANG_SYNTAX = %r!([a-zA-Z0-9.+#_-]+)!x.freeze
+      OPTIONS_SYNTAX = %r!(\s+\w+(=(\w+|"([0-9]+\s)*[0-9]+")?)*)!.freeze
+      VARIABLE_SYNTAX = %r!
+        ^(
+          \{\{\s*
+          (?<lang_var>#{PARAM_SYNTAX})
+          \s*\}\}|
+          (?<lang>#{LANG_SYNTAX})
+        )
+        \s*
+        ((?<fault1>[}]+\s*|)
+        (
+          \{\{\s*
+          (?<params_var>(#{PARAM_SYNTAX}))
+          \s*\}\}|
+          (?<params>(#{OPTIONS_SYNTAX}+))
+        )
+        (?<fault2>.*))?
+      !mx.freeze
+
+      def isNilOrEmpty(var)
+        if var.nil?
+          return true
+        elsif var.strip.empty?
+          return true
+        else
+          return false
+        end
+      end
 
       def initialize(tag_name, markup, tokens)
         super
-        if markup.strip =~ SYNTAX
-          @lang = Regexp.last_match(1)
-          @highlight_options = parse_options(Regexp.last_match(2))
-        else
+        markup  = markup.strip
+        @matched = markup.match(VARIABLE_SYNTAX)
+        # print @matched.captures.to_s + "\n"
+        if !@matched or !isNilOrEmpty(@matched["fault1"]) or !isNilOrEmpty(@matched["fault2"])
           raise SyntaxError, <<~MSG
-            Syntax Error in tag 'highlight' while parsing the following markup:
+            Syntax Error in tag '#{tag_name}' while parsing the following markup:
 
             #{markup}
 
-            Valid syntax: highlight <lang> [linenos]
+            Valid syntax: #{tag_name} <lang> [linenos]
+                      \tOR: #{tag_name} {{ lang_variable }} [linenos]
+                      \tOR: #{tag_name} <lang> {{ [linenos_variable(s)] }}
+                      \tOR: #{tag_name} {{ lang_variable }} {{ [linenos_variable(s)] }}
           MSG
         end
       end
@@ -36,18 +70,36 @@ module Jekyll
         suffix = context["highlighter_suffix"] || ""
         code = super.to_s.gsub(LEADING_OR_TRAILING_LINE_TERMINATORS, "")
 
-        
-        # if ::Rouge::Lexer.find(@lang.downcase) != nil
-        #   @lang = @lang.downcase
-        # else
-        begin
-          ::Rouge::Lexer.find((context[@lang]).downcase) != nil
-          @lang = (context[@lang]).downcase
-        rescue
-          @lang = @lang.downcase
+        if @matched["lang_var"]
+          @lang = context[@matched["lang_var"]].downcase
+          @lang.match(LANG_SYNTAX)
+          unless $& == @lang
+            raise ArgumentError, <<~MSG
+              Language characters can only include Alphanumeric and the following characters, without spaces: . + # _ -
+              Your passed language variable: #{@lang}
+              MSG
+          end
+        elsif @matched["lang"]
+          @lang = @matched["lang"].downcase
+        else
+          raise SyntaxError, <<~MSG
+            Unknown Syntax Error in tag 'highlight_param'.
+            Please review tag documentation.
+            MSG
         end
-        # end
-        
+
+        # puts @lang
+
+        if @matched["params_var"]
+          @highlight_options = parse_options(@matched["params_var"])
+        elsif @matched["params"]
+          @highlight_options = parse_options(@matched["params"])
+        else
+          @highlight_options = parse_options("")
+        end
+
+        # puts @highlight_options
+
         output =
           case context.registers[:site].highlighter
           when "rouge"
@@ -68,7 +120,7 @@ module Jekyll
 
       def parse_options(input)
         options = {}
-        return options if input.empty?
+        return options if isNilOrEmpty(input)
 
         # Split along 3 possible forms -- key="<quoted list>", key=value, or key
         input.scan(OPTIONS_REGEX) do |opt|
@@ -92,6 +144,7 @@ module Jekyll
       end
 
       def render_rouge(code)
+        require "rouge"
         formatter = ::Rouge::Formatters::HTMLLegacy.new(
           :line_numbers => @highlight_options[:linenos],
           :wrap         => false,
@@ -99,7 +152,13 @@ module Jekyll
           :gutter_class => "gutter",
           :code_class   => "code"
         )
-        lexer = ::Rouge::Lexer.find_fancy(@lang, code) || Rouge::Lexers::PlainText
+        if LANG_SYNTAX.match?(@lang)
+          lexer = ::Rouge::Lexer.find_fancy(@lang, code) || Rouge::Lexers::PlainText
+        else
+          raise SyntaxError, <<~MSG
+          Can't find language variable #{@matched["lang_var"]}
+          MSG
+        end
         formatter.format(lexer.lex(code))
       end
 
